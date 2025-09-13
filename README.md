@@ -408,14 +408,49 @@ tradingview-binance-webhook/
 
 ## 🚀 Production Deployment
 
-### Using Gunicorn (Recommended)
+For production deployment, we recommend using Docker for consistency and ease of deployment.
+
+### Using Docker (Recommended)
+
+1. **Create a `.env` file** with your Binance credentials:
+   ```bash
+   BINANCE_API_KEY=your_actual_binance_api_key
+   BINANCE_SECRET_KEY=your_actual_binance_secret_key
+   WEBHOOK_SECRET=your_secure_webhook_password
+   FLASK_ENV=production
+   FLASK_DEBUG=False
+   LOG_LEVEL=INFO
+   ```
+
+2. **Deploy using docker-compose**:
+   ```bash
+   # Build and start services
+   docker-compose up -d
+   
+   # View logs
+   docker-compose logs -f
+   ```
+
+3. **Or use the deployment script**:
+   ```bash
+   ./deploy.sh
+   ```
+
+### Using Gunicorn Directly
+
+If you prefer not to use Docker:
 
 ```bash
 # Install gunicorn
 uv add gunicorn
 
+# Set production environment variables
+export FLASK_ENV=production
+export FLASK_DEBUG=False
+export LOG_LEVEL=INFO
+
 # Run with gunicorn
-uv run gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 30 "src.tradingview_webhook.webhook:app"
+uv run gunicorn --bind 0.0.0.0:5000 --workers 1 --timeout 30 "trading_webhook.webhook:app"
 ```
 
 ### Environment Variables for Production
@@ -426,28 +461,7 @@ FLASK_DEBUG=False
 LOG_LEVEL=INFO
 ```
 
-### Using Docker (Optional)
-
-```dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-
-# Install uv
-RUN pip install uv
-
-# Copy project files
-COPY . .
-
-# Install dependencies
-RUN uv sync --no-dev
-
-# Expose port
-EXPOSE 5000
-
-# Run the application
-CMD ["uv", "run", "gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--timeout", "30", "src.tradingview_webhook.webhook:app"]
-```
+For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## 🧪 Testing
 
