@@ -47,5 +47,5 @@ ENV FLASK_ENV=production
 ENV FLASK_DEBUG=False
 ENV LOG_LEVEL=INFO
 
-# Run the application
-CMD ["uv", "run", "gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--timeout", "30", "--access-logfile", "logs/gunicorn_access.log", "--error-logfile", "logs/gunicorn_error.log", "--log-level", "info", "--capture-output", "trading_webhook.webhook:app"]
+# Activate virtual environment and run the application
+CMD ["/app/.venv/bin/gunicorn", "--bind", "0.0.0.0:5000", "--workers", "1", "--timeout", "30", "--access-logfile", "logs/gunicorn_access.log", "--error-logfile", "logs/gunicorn_error.log", "--log-level", "info", "--capture-output", "src.trading_webhook.webhook:app"]
