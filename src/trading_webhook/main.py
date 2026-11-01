@@ -2,8 +2,9 @@
 
 import logging
 import sys
+
 from .config import Config
-from .webhook import app
+from .webhook import app, configure_logging
 
 logger = logging.getLogger(__name__)
 
@@ -11,6 +12,7 @@ logger = logging.getLogger(__name__)
 def main():
     """Main entry point for the trading webhook server."""
     try:
+        configure_logging()
         # Validate configuration
         Config.validate()
         logger.info("Configuration validated successfully")
@@ -20,11 +22,7 @@ def main():
         logger.info(f"Debug Mode: {Config.FLASK_DEBUG}")
 
         # Run the Flask app
-        app.run(
-            host="0.0.0.0",
-            port=5000,
-            debug=Config.FLASK_DEBUG
-        )
+        app.run(host="0.0.0.0", port=5000, debug=Config.FLASK_DEBUG)
 
     except ValueError as e:
         logger.error(f"Configuration error: {e}")

@@ -1,5 +1,7 @@
 # TradingView to Binance Webhook
 
+[![CI](https://github.com/Onehand-Coding/trading-webhook/actions/workflows/ci.yml/badge.svg)](https://github.com/Onehand-Coding/trading-webhook/actions/workflows/ci.yml)
+
 Automated trading webhook server that receives signals from TradingView and executes trades on Binance.
 
 ## 🚀 Quick Start
@@ -57,6 +59,15 @@ uv run python -m src/trading_webhook.main
 
 ## 🔧 Development
 
+### Tests
+
+```bash
+uv sync --extra dev
+uv run ruff check .
+uv run ruff format --check .
+uv run pytest
+```
+
 ### Testing the Webhook
 
 1. **Check Status:**
@@ -78,14 +89,23 @@ curl -X POST http://localhost:5000/test \
 
 3. **Check Balances:**
 ```bash
-curl http://localhost:5000/balances
+curl -H "X-Webhook-Secret: your_webhook_secret" \
+  http://localhost:5000/balances
 ```
+
+### Security Notes
+
+- The webhook secret is never logged or returned by `/test`.
+- `POST /webhook` and `POST /test` require the `secret` JSON field.
+- Secret comparisons use `hmac.compare_digest`.
+- Ticker, action, amount, quantity, and percentage inputs are validated before any Binance call.
+- `/balances` requires the `X-Webhook-Secret` header.
 
 ### Available Endpoints
 
 - `GET /` - Home/info endpoint
 - `GET /status` - Health check and Binance connectivity
-- `GET /balances` - Get account balances
+- `GET /balances` - Get account balances. Requires `X-Webhook-Secret: <secret>`
 - `POST /webhook` - Main webhook endpoint for TradingView
 - `POST /test` - Test webhook without placing orders
 

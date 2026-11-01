@@ -5,7 +5,7 @@ import hmac
 import json
 import logging
 import time
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
 import requests
 
@@ -31,14 +31,14 @@ class BinanceClient:
         return hmac.new(
             self.secret_key.encode("utf-8"),
             query_string.encode("utf-8"),
-            hashlib.sha256
+            hashlib.sha256,
         ).hexdigest()
 
     def _make_request(
         self,
         endpoint: str,
         params: Optional[Dict[str, Any]] = None,
-        method: str = "GET"
+        method: str = "GET",
     ) -> Dict[str, Any]:
         """Make authenticated request to Binance API."""
         if params is None:
@@ -62,7 +62,7 @@ class BinanceClient:
             return response.json()
         except requests.exceptions.RequestException as e:
             logger.error(f"API request failed: {e}")
-            if hasattr(e.response, 'text'):
+            if hasattr(e.response, "text"):
                 logger.error(f"Response: {e.response.text}")
             raise
 
@@ -101,8 +101,7 @@ class BinanceClient:
         """Get current price for symbol."""
         try:
             response = requests.get(
-                f"{self.base_url}/api/v3/ticker/price?symbol={symbol}",
-                timeout=10
+                f"{self.base_url}/api/v3/ticker/price?symbol={symbol}", timeout=10
             )
             response.raise_for_status()
             return float(response.json()["price"])
@@ -140,13 +139,15 @@ class BinanceClient:
         base_asset = symbol.replace("USDT", "").replace("BUSD", "")
         return self.get_balance(base_asset)
 
-    def place_market_order(self, symbol: str, side: str, quantity: float) -> Optional[Dict[str, Any]]:
+    def place_market_order(
+        self, symbol: str, side: str, quantity: float
+    ) -> Optional[Dict[str, Any]]:
         """Place a market order."""
         params = {
             "symbol": symbol,
             "side": side.upper(),
             "type": "MARKET",
-            "quantity": str(quantity)
+            "quantity": str(quantity),
         }
 
         try:
@@ -172,7 +173,9 @@ class BinanceClient:
         """Test API credentials."""
         try:
             account_info = self.get_account_info()
-            logger.info(f"API credentials valid - Account Type: {account_info.get('accountType')}")
+            logger.info(
+                f"API credentials valid - Account Type: {account_info.get('accountType')}"
+            )
             return True
         except Exception as e:
             logger.error(f"API credentials test failed: {e}")
