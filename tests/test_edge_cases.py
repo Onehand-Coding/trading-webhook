@@ -3,7 +3,6 @@
 
 import json
 import os
-from unittest.mock import MagicMock, patch
 
 import pytest
 from dotenv import load_dotenv
@@ -318,26 +317,16 @@ def test_webhook_float_precision_quantity(client, valid_webhook_data):
     assert response.status_code in [200, 400, 500]
 
 
-@patch("trading_webhook.binance_client.BinanceClient")
-def test_webhook_network_timeout(mock_binance_client, client, valid_webhook_data):
+def test_webhook_network_timeout(client, valid_webhook_data, mock_binance):
     """Test webhook handling of network timeouts."""
-    # Configure mock to raise timeout
-    mock_binance_client_instance = MagicMock()
-    mock_binance_client_instance.test_connectivity.return_value = True
-    mock_binance_client_instance.test_credentials.return_value = True
-    mock_binance_client_instance.calculate_buy_quantity.side_effect = Exception(
-        "Timeout"
-    )
-    mock_binance_client.return_value = mock_binance_client_instance
+    mock_binance.calculate_buy_quantity.side_effect = Exception("Timeout")
 
     response = client.post(
         "/webhook", data=json.dumps(valid_webhook_data), content_type="application/json"
     )
 
-    # Should return error response
-    assert response.status_code in [200, 500]
-    data = json.loads(response.data)
-    assert data["status"] in ["error", "success"]
+    assert response.status_code == 500
+    assert json.loads(response.data)["status"] == "error"
 
 
 def test_webhook_sell_with_no_balance(client, valid_webhook_data):

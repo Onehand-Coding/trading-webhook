@@ -3,7 +3,6 @@
 
 import json
 import os
-from unittest.mock import MagicMock, patch
 
 import pytest
 from dotenv import load_dotenv
@@ -164,33 +163,16 @@ def test_webhook_invalid_action(client, valid_webhook_data):
     assert "Invalid action" in data["message"]
 
 
-@patch("trading_webhook.binance_client.BinanceClient")
-def test_webhook_internal_error(mock_binance_client, client, valid_webhook_data):
+def test_webhook_internal_error(client, valid_webhook_data, mock_binance):
     """Test webhook handling of internal errors."""
-    # Configure mock to raise an exception
-    mock_binance_client_instance = MagicMock()
-    mock_binance_client_instance.test_connectivity.return_value = True
-    mock_binance_client_instance.test_credentials.return_value = True
-    mock_binance_client_instance.calculate_buy_quantity.side_effect = Exception(
-        "Test error"
-    )
-    mock_binance_client.return_value = mock_binance_client_instance
+    mock_binance.calculate_buy_quantity.side_effect = Exception("Test error")
 
     response = client.post(
         "/webhook", data=json.dumps(valid_webhook_data), content_type="application/json"
     )
 
-    # Should return internal server error or error response
-    assert response.status_code in [
-        500,
-        200,
-    ]  # Could be 500 for internal error or 200 for handled error
-
-    data = json.loads(response.data)
-    assert data["status"] in [
-        "error",
-        "success",
-    ]  # Either error or success depending on how it's handled
+    assert response.status_code == 500
+    assert json.loads(response.data)["status"] == "error"
 
 
 def test_config_validation():
